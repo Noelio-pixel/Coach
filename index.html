@@ -108,6 +108,10 @@
   .syncdot{font-size:11px;color:var(--muted);margin-left:auto;}
   .demo{display:inline-block;font-size:12px;color:var(--blue);margin-top:8px;text-decoration:none;font-weight:600;}
   .demo:active{opacity:.6;}
+  .progsel{display:flex;gap:8px;margin-bottom:14px;}
+  .progsel button{flex:1;padding:11px 8px;border-radius:10px;background:var(--card);border:1px solid var(--line);color:var(--muted);font-weight:700;font-size:13px;}
+  .progsel button.on{background:var(--accent2);color:#fff;border-color:var(--accent2);}
+  .progsel button:active{opacity:.85;}
 </style>
 </head>
 <body>
@@ -116,7 +120,7 @@
   <button class="back" id="backBtn" style="display:none">‹</button>
   <div style="flex:1;min-width:0">
     <h1 id="hTitle">Mon Coach</h1>
-    <div class="sub" id="hSub">Prise de masse · maison · 5 jours</div>
+    <div class="sub" id="hSub">Prise de masse · maison · PPL ×2 · 6 jours</div>
   </div>
   <span class="syncdot" id="syncDot"></span>
 </div>
@@ -142,7 +146,8 @@
 /* ============ DONNÉES DU PROGRAMME ============ */
 /* PPL ×2 · version banc · 6 séances/sem · rotation A (J1-3) puis B (J4-6).
    w = charge de départ (kg par haltère, ou charge unique) ; à faire évoluer, 1-2 reps en réserve. */
-const PROGRAM = [
+const PROGRAMS = {
+  pplx2: { name:"PPL ×2", sub:"Prise de masse · maison · PPL ×2 · 6 jours", days:[
   { id:"pushA", tag:"JOUR 1", name:"Push A", focus:"Pecs couché · épaules · triceps", ex:[
     {id:"dc",  n:"Développé couché haltères", t:"banc plat · roll-back, pas d'échec", sets:4, lo:6, hi:10, rest:120, w:14},
     {id:"inc", n:"Développé incliné haltères", t:"30-45°", sets:3, lo:10, hi:12, rest:90, w:14},
@@ -191,7 +196,41 @@ const PROGRAM = [
     {id:"mol", n:"Mollets debout", t:"", sets:4, lo:15, hi:20, rest:45, w:14},
     {id:"gainl",n:"Gainage latéral", t:"30 s par côté et par tour", sets:2, lo:0, hi:0, rest:45, core:true},
   ]},
-];
+  ]},
+  fullbody: { name:"Full-Body", sub:"Full-body A/B/C · maison · 3 séances", days:[
+    { id:"fbA", tag:"SÉANCE A", name:"Full-Body A", focus:"Squat · poussée · tirage · épaules · core", ex:[
+      {id:"gob", n:"Goblet squat", t:"1 haltère contre la poitrine", sets:4, lo:8, hi:12, rest:120, w:18},
+      {id:"dc",  n:"Développé couché haltères", t:"banc plat", sets:3, lo:8, hi:12, rest:90, w:14},
+      {id:"row", n:"Rowing appuyé", t:"poitrine sur banc", sets:3, lo:8, hi:12, rest:90, w:14},
+      {id:"dep", n:"Développé épaules assis", t:"", sets:3, lo:10, hi:12, rest:90, w:12},
+      {id:"elv", n:"Élévations latérales", t:"", sets:3, lo:12, hi:15, rest:60, w:6},
+      {id:"gain",n:"Gainage", t:"45 s de tenue par tour", sets:3, lo:0, hi:0, rest:45, core:true},
+      {id:"rel", n:"Relevés de jambes", t:"bas du dos au sol, descente lente", sets:3, lo:15, hi:15, rest:45, bw:true},
+    ]},
+    { id:"fbB", tag:"SÉANCE B", name:"Full-Body B", focus:"Charnière · incliné · tirage · fentes · core", ex:[
+      {id:"rdl", n:"Soulevé de terre roumain (RDL)", t:"ischios", sets:4, lo:8, hi:12, rest:120, w:16},
+      {id:"inc", n:"Développé incliné haltères", t:"30-45°", sets:3, lo:8, hi:12, rest:90, w:14},
+      {id:"tir", n:"Tirage vertical élastique", t:"élastique moyen", sets:3, lo:10, hi:15, rest:75, band:true},
+      {id:"bul", n:"Fentes bulgares", t:"pied arrière sur banc · par jambe", sets:3, lo:10, hi:10, rest:90, side:true, w:10},
+      {id:"dip", n:"Dips triceps", t:"mains sur le banc", sets:3, lo:8, hi:15, rest:75, bw:true},
+      {id:"gainl",n:"Gainage latéral", t:"30 s par côté et par tour", sets:3, lo:0, hi:0, rest:45, core:true},
+      {id:"crun",n:"Crunch", t:"enroule le buste, expire en montant", sets:3, lo:15, hi:20, rest:45, bw:true},
+    ]},
+    { id:"fbC", tag:"SÉANCE C", name:"Full-Body C", focus:"Fessiers · pecs écarté · tirage · bras · core", ex:[
+      {id:"hip", n:"Hip thrust", t:"épaules sur banc", sets:4, lo:10, hi:15, rest:90, w:18},
+      {id:"ecart",n:"Écarté incliné", t:"banc · isolation pecs", sets:3, lo:10, hi:15, rest:75, w:8},
+      {id:"rwu", n:"Rowing unilatéral", t:"appui sur banc · par bras", sets:3, lo:10, hi:12, rest:75, side:true, w:16},
+      {id:"gobt",n:"Squat gobelet", t:"tempo 3 s descente", sets:3, lo:12, hi:15, rest:90, w:18},
+      {id:"ssmt",n:"Superset : curl marteau + extension triceps", t:"10-12 chacun, enchaînés", sets:3, lo:10, hi:12, rest:60, w:12},
+      {id:"mol", n:"Mollets debout", t:"", sets:4, lo:15, hi:20, rest:45, w:14},
+      {id:"rel", n:"Relevés de jambes", t:"bas du dos au sol, descente lente", sets:3, lo:15, hi:15, rest:45, bw:true},
+    ]},
+  ]},
+};
+const PROGRAM_ORDER = ["pplx2","fullbody"];
+function curProgram(){ return PROGRAMS[DATA.activeProgram] || PROGRAMS.pplx2; }
+function allDays(){ let a=[]; PROGRAM_ORDER.forEach(k=>{ a=a.concat(PROGRAMS[k].days); }); return a; }
+function findDay(id){ return allDays().find(d=>d.id===id) || null; }
 
 const WARMUP = "5 min : mobilité épaules/hanches + 1-2 séries légères du 1er exercice.";
 
@@ -207,6 +246,7 @@ function load(){
   try{ d=JSON.parse(localStorage.getItem(KEY)); }catch(e){}
   if(!d) d={ex:{}, history:[], sync:null, updated:0};
   if(!d.sync || !d.sync.url) d.sync=Object.assign({}, DEFAULT_SYNC);
+  if(!d.activeProgram || !PROGRAMS[d.activeProgram]) d.activeProgram='pplx2';
   return d;
 }
 function persist(){ localStorage.setItem(KEY, JSON.stringify(DATA)); }
@@ -241,10 +281,16 @@ function lastDoneFor(dayId){
   return null;
 }
 function suggestedDay(){
-  if(!DATA.history.length) return PROGRAM[0].id;
-  const last=DATA.history[DATA.history.length-1].day;
-  const idx=PROGRAM.findIndex(p=>p.id===last);
-  return PROGRAM[(idx+1)%PROGRAM.length].id;
+  const days=curProgram().days;
+  for(let i=DATA.history.length-1;i>=0;i--){
+    const idx=days.findIndex(d=>d.id===DATA.history[i].day);
+    if(idx>=0) return days[(idx+1)%days.length].id;
+  }
+  return days[0].id;
+}
+function switchProgram(k){
+  if(!PROGRAMS[k] || k===DATA.activeProgram) return;
+  DATA.activeProgram=k; save(); renderHome();
 }
 function fmtDate(ts){ const d=new Date(ts);
   return d.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'}); }
@@ -252,10 +298,12 @@ function daysAgo(ts){ const n=Math.floor((Date.now()-ts)/86400000);
   return n===0?"aujourd'hui":n===1?"hier":"il y a "+n+" j"; }
 
 function renderHome(){
-  setHeader('Mon Coach','Prise de masse · maison · 5 jours');
+  const prog=curProgram();
+  setHeader('Mon Coach', prog.sub);
   const sugg=suggestedDay();
   let h='<div class="wrap">';
-  PROGRAM.forEach(p=>{
+  h+='<div class="progsel">'+PROGRAM_ORDER.map(k=>`<button class="${k===DATA.activeProgram?'on':''}" onclick="switchProgram('${k}')">${PROGRAMS[k].name}</button>`).join('')+'</div>';
+  prog.days.forEach(p=>{
     const ld=lastDoneFor(p.id);
     const meta = ld ? ('Dernière : '+fmtDate(ld.ts)+' ('+daysAgo(ld.ts)+')') : 'Jamais fait';
     h+=`<div class="day-card" onclick="openSession('${p.id}')">
@@ -275,7 +323,7 @@ function renderHome(){
 
 /* ============ SÉANCE ============ */
 function openSession(dayId){
-  CUR=dayId; const day=PROGRAM.find(p=>p.id===dayId);
+  CUR=dayId; const day=findDay(dayId); if(!day) return;
   SESSION={};
   day.ex.forEach(e=>{
     const m=exMem(e.id);
@@ -296,7 +344,7 @@ function openSession(dayId){
 }
 
 function renderSession(){
-  const day=PROGRAM.find(p=>p.id===CUR);
+  const day=findDay(CUR);
   setHeader(day.name, day.tag+' · '+day.focus);
   let h=`<div class="wrap">
     <div class="warmup"><b>Échauffement</b> — ${WARMUP}</div>`;
@@ -383,7 +431,7 @@ function nextReco(e, weight, reps){
 
 function validateSession(){
   if(!confirm('Valider et enregistrer cette séance ?')) return;
-  const day=PROGRAM.find(p=>p.id===CUR);
+  const day=findDay(CUR);
   const entries=[];
   day.ex.forEach(e=>{
     const st=SESSION[e.id];
@@ -574,7 +622,7 @@ async function apiCall(action, extra){
 async function pushNow(){
   if(!DATA.sync||!DATA.sync.url||!DATA.sync.code) return false;
   try{ syncStatus('☁︎…');
-    await apiCall('push', {payload:JSON.stringify({ex:DATA.ex, history:DATA.history}), updated:DATA.updated});
+    await apiCall('push', {payload:JSON.stringify({ex:DATA.ex, history:DATA.history, activeProgram:DATA.activeProgram}), updated:DATA.updated});
     syncStatus('☁︎'); return true;
   }catch(e){ syncStatus('⚠︎'); return false; }
 }
@@ -596,6 +644,7 @@ async function pullNow(silent){
       /* sécurité : ne JAMAIS écraser des données locales par un cloud vide */
       if(remote > (DATA.updated||0) && !(remoteHist===0 && localHist>0)){
         DATA.ex=p.ex||{}; DATA.history=p.history||[]; DATA.updated=remote;
+        if(p.activeProgram && PROGRAMS[p.activeProgram]) DATA.activeProgram=p.activeProgram;
         persist();
         if(!silent) toast('Récupéré depuis le cloud');
         if(TAB==='home') renderHome(); else if(TAB==='history') renderHistory(); else if(TAB==='progress') renderProgress();
